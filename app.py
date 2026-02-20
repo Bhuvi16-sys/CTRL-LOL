@@ -9,7 +9,7 @@ from flask import Flask, request, send_from_directory, jsonify, render_template
 
 app = Flask(__name__, static_folder='.', template_folder='.')
 app.config['UPLOAD_FOLDER'] = 'uploads/gallery'
-app.config['LEADERBOARD_FILE'] = 'leaderboard.json'
+app.config['LEADERBOARD_FILE'] = 'uploads/leaderboard.json'
 ADMIN_PASSWORD = 'meme_lord_2026' # Simple password for admin
 
 # Ensure gallery directory exists
