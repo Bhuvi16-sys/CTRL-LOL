@@ -3,9 +3,9 @@
 // ===========================================
 const CONFIG = {
     brandText: "CTRL + LOL",
-    tagline: "Humor • Creativity • Digital Expression",
+    tagline: "Humor \u2022 Creativity \u2022 Digital Expression",
     introDuration: 5000,
-    particleCount: 120, // Increased for 3D effect
+    particleCount: window.innerWidth < 768 ? 25 : 55,
     particleSpeed: 0.4
 };
 
@@ -26,17 +26,35 @@ class CustomCursor {
     }
 
     init() {
+        let targetX = 0, targetY = 0;
+        let currentX = 0, currentY = 0;
+        let rafPending = false;
+
+        const lerp = (a, b, t) => a + (b - a) * t;
+
+        const updateOutline = () => {
+            currentX = lerp(currentX, targetX, 0.15);
+            currentY = lerp(currentY, targetY, 0.15);
+            this.outline.style.left = currentX + 'px';
+            this.outline.style.top = currentY + 'px';
+            rafPending = false;
+            if (Math.abs(currentX - targetX) > 0.5 || Math.abs(currentY - targetY) > 0.5) {
+                rafPending = true;
+                requestAnimationFrame(updateOutline);
+            }
+        };
+
         window.addEventListener('mousemove', (e) => {
-            const posX = e.clientX;
-            const posY = e.clientY;
+            targetX = e.clientX;
+            targetY = e.clientY;
 
-            this.dot.style.left = `${posX}px`;
-            this.dot.style.top = `${posY}px`;
+            this.dot.style.left = targetX + 'px';
+            this.dot.style.top = targetY + 'px';
 
-            this.outline.animate({
-                left: `${posX}px`,
-                top: `${posY}px`
-            }, { duration: 500, fill: "forwards" });
+            if (!rafPending) {
+                rafPending = true;
+                requestAnimationFrame(updateOutline);
+            }
         });
 
         document.querySelectorAll(this.interactables).forEach(el => {
@@ -100,8 +118,8 @@ class ParticleSystem {
     }
 
     getRandomColor() {
-        // Neon Vaporwave Palette
-        const colors = ['#FF00FF', '#00FF00', '#FFFF00', '#00FFFF', '#FFFFFF'];
+        // Stats O'Locked Palette: cyan, orange, silver, white
+        const colors = ['#00C8FF', '#38D9FF', '#FF6B1A', '#C0C8D8', '#FFFFFF', '#0080CC'];
         return colors[Math.floor(Math.random() * colors.length)];
     }
 
@@ -120,35 +138,27 @@ class ParticleSystem {
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Sort particles by Z so far ones draw first (Painter's Algorithm)
-        this.particles.sort((a, b) => b.z - a.z);
+        // No per-frame sort – skip Painter's Algorithm (negligible visual diff, big perf gain)
+        const focalLength = 300;
+        const W = this.canvas.width;
+        const H = this.canvas.height;
 
-        this.particles.forEach(p => {
-            // Perspective Math
-            // focalLength = 300. The smaller the Z, the larger the scale.
-            const focalLength = 300;
+        for (let i = 0; i < this.particles.length; i++) {
+            const p = this.particles[i];
             const scale = focalLength / (focalLength + p.z);
-
             const x2d = this.cx + p.x * scale;
             const y2d = this.cy + p.y * scale;
 
-            // Don't draw if outside canvas bounds (performance)
-            if (x2d < -50 || x2d > this.canvas.width + 50 || y2d < -50 || y2d > this.canvas.height + 50) return;
+            if (x2d < -50 || x2d > W + 50 || y2d < -50 || y2d > H + 50) continue;
 
-            // Opacity fades as it gets very close or very far
             const alpha = Math.min(1, (2000 - p.z) / 1000);
+            const fontSize = Math.max(10, 60 * scale) | 0; // bitwise floor
 
-            this.ctx.font = `700 ${Math.max(10, 60 * scale)}px "Outfit", sans-serif`;
-            this.ctx.fillStyle = p.color;
             this.ctx.globalAlpha = alpha;
+            this.ctx.font = `700 ${fontSize}px Outfit,sans-serif`;
+            this.ctx.fillStyle = p.color;
             this.ctx.fillText(p.text, x2d, y2d);
-
-            // Glitch shadow effect for close particles
-            if (scale > 0.5) {
-                this.ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
-                this.ctx.fillText(p.text, x2d + (5 * scale), y2d);
-            }
-        });
+        }
 
         this.ctx.globalAlpha = 1;
     }
@@ -262,10 +272,10 @@ class LockAnimator {
     spinTumbler(element, index) {
         // Use emojis for the spinning animation
         const chars = ['😂', '💀', '🤡', '🔥', '🚀', '👀', '💩', '✨', '⚡️', '👾'];
+        const spinColors = ['#00C8FF', '#38D9FF', '#FF6B1A', '#C0C8D8'];
         const interval = setInterval(() => {
             element.textContent = chars[Math.floor(Math.random() * chars.length)];
-            // Random colors during spin
-            element.style.color = Math.random() > 0.5 ? '#FF00FF' : '#00FF00';
+            element.style.color = spinColors[Math.floor(Math.random() * spinColors.length)];
         }, 50);
         this.intervals[index] = interval;
     }
@@ -274,7 +284,7 @@ class LockAnimator {
         clearInterval(this.intervals[index]);
         const element = this.tumblers[index];
         element.textContent = this.finalCode[index];
-        element.style.color = '#FFFF00'; // Gold/Yellow for the final letter
+        element.style.color = '#FF6B1A'; // Orange for the final letter
 
         element.parentElement.classList.add('unlocked');
 
@@ -473,10 +483,10 @@ function initFloatingElements() {
 
 window.addEventListener('scroll', () => {
     const navbar = document.querySelector('.navbar');
-    if (window.scrollY > 100) {
-        navbar.style.background = 'rgba(18, 0, 36, 0.95)';
+    if (window.scrollY > 80) {
+        navbar.style.background = 'rgba(5, 13, 26, 0.97)';
     } else {
-        navbar.style.background = 'rgba(18, 0, 36, 0.9)';
+        navbar.style.background = 'rgba(5, 13, 26, 0.88)';
     }
 });
 
@@ -503,7 +513,5 @@ document.addEventListener('DOMContentLoaded', () => {
     intro.start();
 });
 
-if (window.innerWidth < 768) CONFIG.particleCount = 40;
-
-console.log('%c🔓 CTRL + LOL ', 'font-size: 24px; font-weight: bold; color: #FF00FF;');
-console.log('%cReady to enter the Meme-verse?', 'font-size: 14px; color: #00FF00;');
+console.log('%c🔓 CTRL + LOL ', 'font-size: 24px; font-weight: bold; color: #00C8FF;');
+console.log('%cReady to enter the Meme-verse?', 'font-size: 14px; color: #FF6B1A;');
