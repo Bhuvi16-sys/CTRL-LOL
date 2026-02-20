@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTRL + LOL | The Meme-verse Event</title>
+    <meta name="description"
+        content="CTRL + LOL - A fully online meme creation competition by Stats O'Locked. Join, create, and win!">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="cursor-dot" data-cursor-dot></div>
+    <div class="cursor-outline" data-cursor-outline></div>
+
+    <div id="intro-container" class="intro-container active">
+        <div class="animated-bg"></div>
+        <canvas id="particles"></canvas>
+
+        <div class="intro-content">
+            <div class="brand-wrapper">
+                <div class="sol-logo">
+                    <img src="sol-logo.png" alt="Stats O'Locked Logo" class="intro-logo">
+                </div>
+
+                <h1 class="brand-text" id="brand-text"></h1>
+                <div class="brand-underline"></div>
+            </div>
+
+            <p class="tagline" id="tagline"></p>
+
+            <div class="progress-wrapper">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-info">
+                    <span class="progress-text" id="progress-text">0%</span>
+                    <span class="progress-label">Generating Cringe...</span>
+                </div>
+            </div>
+
+            <div class="lock-container">
+                <div class="lock-tumbler">
+                    <span class="tumbler-value" id="tumbler-1">😂</span>
+                    <div class="tumbler-line"></div>
+                </div>
+                <div class="lock-tumbler">
+                    <span class="tumbler-value" id="tumbler-2">💀</span>
+                    <div class="tumbler-line"></div>
+                </div>
+                <div class="lock-tumbler">
+                    <span class="tumbler-value" id="tumbler-3">🤡</span>
+                    <div class="tumbler-line"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-content" class="main-content">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <img src="sol-logo.png" alt="Stats O'Locked Logo" class="site-logo">
+                </div>
+
+                <ul class="nav-menu" id="nav-menu">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">The Event</a></li>
+                    <li><a href="#themes">Themes</a></li>
+                    <li><a href="#timeline">Timeline</a></li>
+                    <li><a href="#scoring">Scoring</a></li>
+                    <li><a href="#guidelines">Guidelines</a></li>
+                    <li><a href="#leaderboard">Leaderboard</a></li>
+                    <li><a href="#gallery">Gallery</a></li>
+                </ul>
+                <button class="nav-toggle" id="nav-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </nav>
+
+        <section class="hero" id="home">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="badge-icon">👾</span>
+                    <span>Online • Feb 21 - 27</span>
+                </div>
+                <h1 class="hero-title">
+                    <span class="title-line">CTRL + LOL</span>
+                    <span class="title-line accent">Code. Compile. Laugh.</span>
+                </h1>
+                <p class="hero-subtitle">Turn your coding trauma into comedy. The ultimate meme showdown is here.</p>
+                <div class="hero-cta">
+                    <a href="#themes" class="btn btn-primary">Start Creating</a>
+                    <a href="#guidelines" class="btn btn-secondary">View Guidelines</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <span class="stat-number" data-count="7">0</span>
+                        <span class="stat-label">Days of Chaos</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-count="4">0</span>
+                        <span class="stat-label">Epic Themes</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-count="100">0</span>
+                        <span class="stat-label">% Relatable</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="about" id="about">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">// Context</span>
+                    <h2 class="section-title">Enter the <span class="accent">Meme-verse</span></h2>
+                    <p class="section-desc">CTRL + LOL is a fully online battle of wits. We don't want your clean code;
+                        we want your funniest bugs, your deployment disasters, and your campus struggles.</p>
+                </div>
+
+                <div class="about-grid">
+                    <div class="about-card" data-aos="fade-up" data-delay="0">
+                        <div class="card-icon">🚀</div>
+                        <h3>Meme-O-Meet</h3>
+                        <p>Virtual Kickoff on Feb 20th. We explain the rules, reveal the strategies, and drop the first
+                            memes.</p>
+                    </div>
+                    <div class="about-card" data-aos="fade-up" data-delay="100">
+                        <div class="card-icon">📈</div>
+                        <h3>Live Leaderboard</h3>
+                        <p>Updated every 24 hours. Your engagement counts. 1 Like = 10 Points. Get famous or go home.
+                        </p>
+                    </div>
+                    <div class="about-card" data-aos="fade-up" data-delay="200">
+                        <div class="card-icon">👁️</div>
+                        <h3>Public Gallery</h3>
+                        <p>All approved entries are hosted on this site. Transparency is key. Visibility is infinite.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="domains" id="themes">
+            <div class="container">
+                <div class="section-header centered">
+                    <span class="section-tag">// Categories</span>
+                    <h2 class="section-title">Choose Your <span class="accent">Struggle</span></h2>
+                    <p class="section-desc">Select a theme and roast your reality.</p>
+                </div>
+
+                <div class="domains-grid">
+                    <div class="domain-card" data-domain="tech" data-aos="fade-up">
+                        <div class="domain-number">01</div>
+                        <div class="domain-icon">🤖</div>
+                        <h3 class="domain-title">Tech Life</h3>
+                        <p class="domain-desc">Windows updates at 99%, broken headphones, and dark mode addiction.</p>
+                        <div class="domain-badge">Lifestyle</div>
+                    </div>
+
+                    <div class="domain-card" data-domain="events" data-aos="fade-up" data-delay="50">
+                        <div class="domain-number">02</div>
+                        <div class="domain-icon">🐛</div>
+                        <h3 class="domain-title">Coding Struggles</h3>
+                        <p class="domain-desc">Missing semicolons, infinite loops, and StackOverflow copy-pastes gone
+                            wrong.</p>
+                        <div class="domain-badge">Dev Humor</div>
+                    </div>
+
+                    <div class="domain-card" data-domain="research" data-aos="fade-up" data-delay="100">
+                        <div class="domain-number">03</div>
+                        <div class="domain-icon">🎓</div>
+                        <h3 class="domain-title">College Chaos</h3>
+                        <p class="domain-desc">8 AM classes, mess food mysteries, and the proxy attendance gamble.</p>
+                        <div class="domain-badge">Campus</div>
+                    </div>
+
+                    <div class="domain-card" data-domain="creative" data-aos="fade-up" data-delay="150">
+                        <div class="domain-number">04</div>
+                        <div class="domain-icon">💼</div>
+                        <h3 class="domain-title">Placement Pressure</h3>
+                        <p class="domain-desc">"Tell me about yourself", aptitude tests, and the rejection email folder.
+                        </p>
+                        <div class="domain-badge">Career</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="events" id="timeline">
+            <div class="container">
+                <div class="section-header">
+                    <span class="section-tag">// Timeline</span>
+                    <h2 class="section-title">The <span class="accent">Runbook</span></h2>
+                </div>
+
+                <div class="timeline">
+                    <div class="timeline-item" data-aos="fade-right">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h3>Feb 21: Kickoff</h3>
+                            <p><strong>Meme-O-Meet:</strong> The virtual launch. Rules, themes, and hype.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item" data-aos="fade-left">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h3>Feb 21 - 27: The Grind</h3>
+                            <p>Submission window open. Upload via website. Approved memes go live instantly.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item" data-aos="fade-right">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h3>Daily: Checkpoints</h3>
+                            <p>Live Leaderboard updates every 24 hours. Check your rank.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item" data-aos="fade-left">
+                        <div class="timeline-marker"></div>
+                        <div class="timeline-content">
+                            <h3>Feb 28: Verdict</h3>
+                            <p>Winners announced based on Engagement (50%) and Jury Score (50%).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="team" id="scoring">
+            <div class="container">
+                <div class="section-header centered">
+                    <span class="section-tag">// Evaluation</span>
+                    <h2 class="section-title">How to <span class="accent">Win</span></h2>
+                    <p class="section-desc">A balanced system of popularity and quality.</p>
+                </div>
+
+                <div class="team-grid">
+                    <div class="team-card" data-aos="zoom-in">
+                        <div class="team-image">
+                            <div class="team-placeholder">❤️</div>
+                        </div>
+                        <h3 class="team-name">50% Engagement</h3>
+                        <p class="team-role">The People's Choice</p>
+                        <p style="margin-top:1rem; color: var(--text-gray); font-size: 0.9rem;">1 Like = 10
+                            Points.<br>Share your
+                            link everywhere.</p>
+                    </div>
+                    <div class="team-card" data-aos="zoom-in" data-delay="100">
+                        <div class="team-image">
+                            <div class="team-placeholder">⚖️</div>
+                        </div>
+                        <h3 class="team-name">50% Jury Score</h3>
+                        <p class="team-role">The Quality Check</p>
+                        <p style="margin-top:1rem; color: var(--text-gray); font-size: 0.9rem;">Judged
+                            on:<br>Creativity,
+                            Relatability &amp; Humor.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="guidelines" id="guidelines">
+            <div class="container">
+                <div class="section-header centered">
+                    <span class="section-tag">// Rules</span>
+                    <h2 class="section-title">Participation <span class="accent">Guidelines</span></h2>
+                    <p class="section-desc">Follow these rules to ensure your entry is valid and respected.</p>
+                </div>
+
+                <div class="guidelines-list" style="max-width: 900px; margin: 0 auto;">
+                    <div class="guideline-item" data-aos="fade-up">
+                        <div class="guideline-number">01</div>
+                        <div class="guideline-content">
+                            <h3>Original Content Only</h3>
+                            <p>The meme or reel must be your own creation. Plagiarism, reposted content, or copied
+                                templates without modification will lead to disqualification.</p>
+                        </div>
+                    </div>
+
+                    <div class="guideline-item" data-aos="fade-up" data-delay="50">
+                        <div class="guideline-number">02</div>
+                        <div class="guideline-content">
+                            <h3>Theme Relevance</h3>
+                            <p>Content must relate to the given themes (tech life, coding struggles, college chaos,
+                                placement pressure).</p>
+                        </div>
+                    </div>
+
+                    <div class="guideline-item" data-aos="fade-up" data-delay="100">
+                        <div class="guideline-number">03</div>
+                        <div class="guideline-content">
+                            <h3>Appropriate & Respectful</h3>
+                            <p>No abusive, offensive, political, religious, discriminatory, or explicit content will be
+                                tolerated. Maintain campus decorum.</p>
+                        </div>
+                    </div>
+
+                    <div class="guideline-item" data-aos="fade-up" data-delay="150">
+                        <div class="guideline-number">04</div>
+                        <div class="guideline-content">
+                            <h3>Instagram Posting Rule</h3>
+                            <p>Participants must post the meme/reel on their own Instagram account and tag the official
+                                Stats-O-Locked account.</p>
+                        </div>
+                    </div>
+
+                    <div class="guideline-item" data-aos="fade-up" data-delay="200">
+                        <div class="guideline-number">05</div>
+                        <div class="guideline-content">
+                            <h3>Public Account Requirement</h3>
+                            <p>Your Instagram account must remain public during the event for engagement tracking.</p>
+                        </div>
+                    </div>
+
+                    <div class="guideline-item" data-aos="fade-up" data-delay="250">
+                        <div class="guideline-number">06</div>
+                        <div class="guideline-content">
+                            <h3>Engagement Authenticity</h3>
+                            <p>Fake likes, bots, paid promotions, or engagement manipulation will result in strict
+                                disqualification.</p>
+                        </div>
+                    </div>
+
+                    <div class="guideline-item" data-aos="fade-up" data-delay="300">
+                        <div class="guideline-number">07</div>
+                        <div class="guideline-content">
+                            <h3>Content Quality (For Reels)</h3>
+                            <p>Reels should be clear (good audio/video quality) and within Instagram’s standard duration
+                                limits.</p>
+                        </div>
+                    </div>
+
+                    <div class="guideline-item" data-aos="fade-up" data-delay="350">
+                        <div class="guideline-number">08</div>
+                        <div class="guideline-content">
+                            <h3>Caption & Hashtags</h3>
+                            <p>Use the official event hashtag (if provided) and tag the official account correctly.</p>
+                        </div>
+                    </div>
+
+                    <div class="guideline-item" data-aos="fade-up" data-delay="400">
+                        <div class="guideline-number">09</div>
+                        <div class="guideline-content">
+                            <h3>Submission Timeline</h3>
+                            <p>Posts made outside the event dates (21st–27th February) will not be considered.</p>
+                        </div>
+                    </div>
+
+                    <div class="guideline-item" data-aos="fade-up" data-delay="450">
+                        <div class="guideline-number">10</div>
+                        <div class="guideline-content">
+                            <h3>Final Decision</h3>
+                            <p>Judges’ decision will be final and binding.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="leaderboard" id="leaderboard">
+            <div class="container">
+                <div class="section-header centered">
+                    <span class="section-tag">// Standings</span>
+                    <h2 class="section-title">Live <span class="accent">Leaderboard</span></h2>
+                    <p class="section-desc">Real-time rankings based on engagement and jury scores.</p>
+                </div>
+
+                <div class="leaderboard-container" data-aos="fade-up">
+                    <div class="leaderboard-table-wrapper">
+                        <table class="leaderboard-table">
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Participant</th>
+                                    <th>Score</th>
+                                    <th>Memes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboard-data">
+                                <!-- Data will be loaded via script.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="gallery" id="gallery">
+            <div class="container">
+                <div class="section-header centered">
+                    <span class="section-tag">// Showcase</span>
+                    <h2 class="section-title">Meme <span class="accent">Gallery</span></h2>
+                    <p class="section-desc">The most creative and relatable masterpieces from the community.</p>
+                </div>
+
+                <div class="gallery-grid" id="meme-gallery">
+                    <!-- Images will be loaded via script.js -->
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-left">
+                        <div class="footer-logo">
+                            <img src="sol-logo.png" alt="Stats O'Locked Logo" class="site-logo">
+                        </div>
+
+                        <p class="footer-tagline">Stats O'Locked - Where Data Meets Memes</p>
+                    </div>
+                    <div class="footer-right">
+                        <p>&copy; 2026 Stats O'Locked.</p>
+                        <p>Made with ☕ and <a href="/admin" style="color: inherit; text-decoration: none;">Panic</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

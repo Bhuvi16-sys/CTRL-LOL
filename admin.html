@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTRL + LOL | Admin Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-container {
+            max-width: 1000px;
+            margin: 100px auto;
+            padding: 2rem;
+            background: var(--bg-mid);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 200, 255, 0.2);
+        }
+
+        .admin-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .admin-section {
+            margin-bottom: 4rem;
+            padding: 2rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 200, 255, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(0, 200, 255, 0.1);
+        }
+
+        .admin-input {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--code-bg);
+            border: 1px solid rgba(0, 200, 255, 0.2);
+            color: white;
+            border-radius: 6px;
+        }
+
+        .admin-btn {
+            background: var(--primary);
+            color: var(--bg-dark);
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow-cyan);
+        }
+
+        .status-msg {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .status-success {
+            background: rgba(0, 255, 0, 0.1);
+            color: #00FF00;
+            border: 1px solid #00FF00;
+        }
+
+        .status-error {
+            background: rgba(255, 0, 0, 0.1);
+            color: #FF0000;
+            border: 1px solid #FF0000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1 class="section-title">Admin <span class="accent">Dashboard</span></h1>
+            <p>Securely manage the live leaderboard and event gallery.</p>
+        </div>
+
+        <div class="form-group">
+            <label>Admin Password</label>
+            <input type="password" id="admin-pass" class="admin-input" placeholder="Enter password to save changes">
+        </div>
+
+        <!-- Leaderboard Management -->
+        <div class="admin-section">
+            <h2 class="form-section-title">1. Manage Leaderboard</h2>
+            <table class="admin-table" id="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Participant</th>
+                        <th>Score</th>
+                        <th>Memes</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <!-- Loaded dynamically -->
+                </tbody>
+            </table>
+            <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                <button class="admin-btn" onclick="saveLeaderboard()">Update Leaderboard</button>
+                <button class="admin-btn"
+                    style="background: var(--bg-card); border: 1px solid var(--primary); color: var(--primary);"
+                    onclick="addTeamRow()">+ Add New Team</button>
+            </div>
+            <div id="leaderboard-status" class="status-msg"></div>
+        </div>
+
+        <!-- Gallery Upload -->
+        <div class="admin-section">
+            <h2 class="form-section-title">2. Upload to Meme Gallery</h2>
+            <form id="gallery-form" onsubmit="uploadToGallery(event)">
+                <div class="form-group">
+                    <label>Choose Meme Image</label>
+                    <input type="file" name="meme_file" accept="image/*" class="admin-input" required>
+                </div>
+                <button type="submit" class="admin-btn">Publish to Gallery</button>
+            </form>
+            <div id="gallery-status" class="status-msg"></div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/" style="color: var(--primary); text-decoration: none;">&larr; Return to Live Site</a>
+        </div>
+    </div>
+
+    <script>
+        function addTeamRow(item = { rank: '', team: '', score: '', memes: '' }) {
+            const body = document.getElementById('leaderboard-body');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="number" class="admin-input rank-input" value="${item.rank}" placeholder="Rank"></td>
+                <td><input type="text" class="admin-input team-input" value="${item.team}" placeholder="Participant Name"></td>
+                <td><input type="number" class="admin-input score-input" value="${item.score}" placeholder="Score"></td>
+                <td><input type="number" class="admin-input memes-input" value="${item.memes}" placeholder="Memes"></td>
+            `;
+            body.appendChild(row);
+        }
+
+        // Load current leaderboard
+        async function loadLeaderboard() {
+            const res = await fetch('/api/leaderboard');
+            const data = await res.json();
+            const body = document.getElementById('leaderboard-body');
+            body.innerHTML = '';
+
+            if (data.length > 0) {
+                data.forEach(item => addTeamRow(item));
+            } else {
+                // Add one empty row for convenience if empty
+                addTeamRow();
+            }
+        }
+
+        async function saveLeaderboard() {
+            const password = document.getElementById('admin-pass').value;
+            const rows = document.querySelectorAll('#leaderboard-body tr');
+            const data = Array.from(rows).map(row => ({
+                rank: parseInt(row.querySelector('.rank-input').value),
+                team: row.querySelector('.team-input').value,
+                score: parseInt(row.querySelector('.score-input').value),
+                memes: parseInt(row.querySelector('.memes-input').value)
+            }));
+
+            const formData = new FormData();
+            formData.append('password', password);
+            formData.append('data', JSON.stringify(data));
+
+            const status = document.getElementById('leaderboard-status');
+            try {
+                const res = await fetch('/api/admin/leaderboard', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (res.ok) {
+                    showStatus(status, 'Leaderboard updated successfully!', 'success');
+                } else {
+                    showStatus(status, 'Error: ' + await res.text(), 'error');
+                }
+            } catch (e) {
+                showStatus(status, 'Network error', 'error');
+            }
+        }
+
+        async function uploadToGallery(e) {
+            e.preventDefault();
+            const password = document.getElementById('admin-pass').value;
+            const status = document.getElementById('gallery-status');
+            const formData = new FormData(e.target);
+            formData.append('password', password);
+
+            try {
+                const res = await fetch('/api/admin/gallery/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (res.ok) {
+                    showStatus(status, 'Meme published to gallery!', 'success');
+                    e.target.reset();
+                } else {
+                    showStatus(status, 'Error: ' + await res.text(), 'error');
+                }
+            } catch (e) {
+                showStatus(status, 'Network error', 'error');
+            }
+        }
+
+        function showStatus(el, msg, type) {
+            el.textContent = msg;
+            el.className = 'status-msg status-' + type;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 5000);
+        }
+
+        loadLeaderboard();
+    </script>
+</body>
+
+</html>
