@@ -1,0 +1,6 @@
+supabase_config.json
+__pycache__/
+*.pyc
+.env
+uploads/gallery/*
+!uploads/gallery/.gitkeep
