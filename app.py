@@ -18,20 +18,42 @@ supabase: Client = None
 def get_supabase_client():
     global supabase
     if supabase is None:
-        if os.path.exists(app.config['SUPABASE_CONFIG_FILE']):
+        # Try environment variables first (Good for Render/Production)
+        url = os.environ.get('SUPABASE_URL')
+        key = os.environ.get('SUPABASE_KEY')
+        
+        # Fallback to config file (Good for local development)
+        if not url or not key:
+            if os.path.exists(app.config['SUPABASE_CONFIG_FILE']):
+                try:
+                    with open(app.config['SUPABASE_CONFIG_FILE'], 'r') as f:
+                        config = json.load(f)
+                        url = config.get('url')
+                        key = config.get('key')
+                except Exception as e:
+                    print(f"Error reading config file: {e}")
+        
+        if url and key:
             try:
-                with open(app.config['SUPABASE_CONFIG_FILE'], 'r') as f:
-                    config = json.load(f)
-                    if config.get('url') and config.get('key'):
-                        supabase = create_client(config['url'], config['key'])
+                supabase = create_client(url, key)
             except Exception as e:
-                print(f"Error initializing Supabase: {e}")
+                print(f"Error initializing Supabase client: {e}")
+                
     return supabase
 
 def get_supabase_bucket():
+    # Try environment variable
+    bucket = os.environ.get('SUPABASE_BUCKET')
+    if bucket:
+        return bucket
+        
+    # Fallback to config file
     if os.path.exists(app.config['SUPABASE_CONFIG_FILE']):
-        with open(app.config['SUPABASE_CONFIG_FILE'], 'r') as f:
-            return json.load(f).get('bucket', 'memes')
+        try:
+            with open(app.config['SUPABASE_CONFIG_FILE'], 'r') as f:
+                return json.load(f).get('bucket', 'memes')
+        except:
+            pass
     return 'memes'
 
 # Ensure gallery directory exists
