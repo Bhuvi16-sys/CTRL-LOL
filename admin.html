@@ -108,7 +108,6 @@
             <input type="password" id="admin-pass" class="admin-input" placeholder="Enter password to save changes">
         </div>
 
-        <!-- Leaderboard Management -->
         <div class="admin-section">
             <h2 class="form-section-title">1. Manage Leaderboard</h2>
             <table class="admin-table" id="leaderboard-table">
@@ -121,8 +120,7 @@
                     </tr>
                 </thead>
                 <tbody id="leaderboard-body">
-                    <!-- Loaded dynamically -->
-                </tbody>
+                    </tbody>
             </table>
             <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
                 <button class="admin-btn" onclick="saveLeaderboard()">Update Leaderboard</button>
@@ -133,7 +131,6 @@
             <div id="leaderboard-status" class="status-msg"></div>
         </div>
 
-        <!-- Gallery Upload -->
         <div class="admin-section">
             <h2 class="form-section-title">2. Upload to Meme Gallery</h2>
             <form id="gallery-form" onsubmit="uploadToGallery(event)">
@@ -145,27 +142,8 @@
             </form>
             <div id="gallery-status" class="status-msg"></div>
             <p style="margin-top: 1rem; color: var(--text-gray); font-size: 0.8rem;">
-                Note: Files will be uploaded to Supabase if configured, otherwise they will be saved locally.
+                Note: Files will be uploaded securely to Supabase Bucket. URLs will be locked in PostgreSQL.
             </p>
-        </div>
-
-        <!-- Supabase Configuration -->
-        <div class="admin-section">
-            <h2 class="form-section-title">3. Supabase Integration</h2>
-            <div class="form-group">
-                <label>Supabase Project URL</label>
-                <input type="text" id="sb-url" class="admin-input" placeholder="https://xyz.supabase.co">
-            </div>
-            <div class="form-group">
-                <label>Supabase API Key (Service Role for Uploads)</label>
-                <input type="password" id="sb-key" class="admin-input" placeholder="eyJhbGciOiJIUzI1NiIs...">
-            </div>
-            <div class="form-group">
-                <label>Storage Bucket Name</label>
-                <input type="text" id="sb-bucket" class="admin-input" placeholder="memes">
-            </div>
-            <button class="admin-btn" onclick="saveSupabaseConfig()">Save Supabase Settings</button>
-            <div id="sb-status" class="status-msg"></div>
         </div>
 
         <div style="text-align: center;">
@@ -186,7 +164,7 @@
             body.appendChild(row);
         }
 
-        // Load current leaderboard
+        // Load current leaderboard from PostgreSQL
         async function loadLeaderboard() {
             const res = await fetch('/api/leaderboard');
             const data = await res.json();
@@ -196,11 +174,11 @@
             if (data.length > 0) {
                 data.forEach(item => addTeamRow(item));
             } else {
-                // Add one empty row for convenience if empty
                 addTeamRow();
             }
         }
 
+        // Save leaderboard data directly to PostgreSQL
         async function saveLeaderboard() {
             const password = document.getElementById('admin-pass').value;
             const rows = document.querySelectorAll('#leaderboard-body tr');
@@ -222,7 +200,7 @@
                     body: formData
                 });
                 if (res.ok) {
-                    showStatus(status, 'Leaderboard updated successfully!', 'success');
+                    showStatus(status, 'Leaderboard locked in PostgreSQL successfully!', 'success');
                 } else {
                     showStatus(status, 'Error: ' + await res.text(), 'error');
                 }
@@ -231,6 +209,7 @@
             }
         }
 
+        // Upload image to Bucket and save URL to PostgreSQL
         async function uploadToGallery(e) {
             e.preventDefault();
             const password = document.getElementById('admin-pass').value;
@@ -245,55 +224,10 @@
                 });
                 const resultText = await res.text();
                 if (res.ok) {
-                    showStatus(status, 'Meme published: ' + resultText, 'success');
+                    showStatus(status, 'Meme published to Cloud: ' + resultText, 'success');
                     e.target.reset();
                 } else {
                     showStatus(status, 'Error: ' + resultText, 'error');
-                }
-            } catch (e) {
-                showStatus(status, 'Network error', 'error');
-            }
-        }
-
-        async function loadSupabaseConfig() {
-            const password = document.getElementById('admin-pass').value;
-            if (!password) return;
-
-            try {
-                const res = await fetch('/api/admin/supabase/config?password=' + encodeURIComponent(password));
-                if (res.ok) {
-                    const config = await res.json();
-                    document.getElementById('sb-url').value = config.url || '';
-                    document.getElementById('sb-key').value = config.key || '';
-                    document.getElementById('sb-bucket').value = config.bucket || '';
-                }
-            } catch (e) {
-                console.error('Error loading Supabase config:', e);
-            }
-        }
-
-        async function saveSupabaseConfig() {
-            const password = document.getElementById('admin-pass').value;
-            const url = document.getElementById('sb-url').value;
-            const key = document.getElementById('sb-key').value;
-            const bucket = document.getElementById('sb-bucket').value;
-
-            const formData = new FormData();
-            formData.append('password', password);
-            formData.append('url', url);
-            formData.append('key', key);
-            formData.append('bucket', bucket);
-
-            const status = document.getElementById('sb-status');
-            try {
-                const res = await fetch('/api/admin/supabase/config', {
-                    method: 'POST',
-                    body: formData
-                });
-                if (res.ok) {
-                    showStatus(status, 'Supabase settings saved!', 'success');
-                } else {
-                    showStatus(status, 'Error: ' + await res.text(), 'error');
                 }
             } catch (e) {
                 showStatus(status, 'Network error', 'error');
@@ -306,9 +240,6 @@
             el.style.display = 'block';
             setTimeout(() => el.style.display = 'none', 5000);
         }
-
-        // Add change listener to password field to load config when entered
-        document.getElementById('admin-pass').addEventListener('blur', loadSupabaseConfig);
 
         loadLeaderboard();
     </script>

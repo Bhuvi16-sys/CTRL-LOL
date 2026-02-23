@@ -1,63 +1,21 @@
 import os
-import csv
-from datetime import datetime
-from werkzeug.utils import secure_filename
 import json
-from flask import Flask, request, send_from_directory, jsonify, render_template
+from datetime import datetime
+from flask import Flask, request, send_from_directory, jsonify
+from werkzeug.utils import secure_filename
 from supabase import create_client, Client
 
 app = Flask(__name__, static_folder='.', template_folder='.')
-app.config['UPLOAD_FOLDER'] = 'uploads/gallery'
-app.config['LEADERBOARD_FILE'] = 'uploads/leaderboard.json'
-app.config['SUPABASE_CONFIG_FILE'] = 'supabase_config.json'
-ADMIN_PASSWORD = 'meme_lord_2026' # Simple password for admin
+ADMIN_PASSWORD = 'meme_lord_2026'
 
-# Supabase Initialization
-supabase: Client = None
+# 🚨 Credentials strictly Environment Variables se aayenge
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
-def get_supabase_client():
-    global supabase
-    if supabase is None:
-        # Try environment variables first (Good for Render/Production)
-        url = os.environ.get('SUPABASE_URL')
-        key = os.environ.get('SUPABASE_KEY')
-        
-        # Fallback to config file (Good for local development)
-        if not url or not key:
-            if os.path.exists(app.config['SUPABASE_CONFIG_FILE']):
-                try:
-                    with open(app.config['SUPABASE_CONFIG_FILE'], 'r') as f:
-                        config = json.load(f)
-                        url = config.get('url')
-                        key = config.get('key')
-                except Exception as e:
-                    print(f"Error reading config file: {e}")
-        
-        if url and key:
-            try:
-                supabase = create_client(url, key)
-            except Exception as e:
-                print(f"Error initializing Supabase client: {e}")
-                
-    return supabase
+if not SUPABASE_URL or not SUPABASE_KEY:
+    print("❌ FATAL: Supabase credentials missing! Render mein environment variables check kar.")
 
-def get_supabase_bucket():
-    # Try environment variable
-    bucket = os.environ.get('SUPABASE_BUCKET')
-    if bucket:
-        return bucket
-        
-    # Fallback to config file
-    if os.path.exists(app.config['SUPABASE_CONFIG_FILE']):
-        try:
-            with open(app.config['SUPABASE_CONFIG_FILE'], 'r') as f:
-                return json.load(f).get('bucket', 'memes')
-        except:
-            pass
-    return 'memes'
-
-# Ensure gallery directory exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/')
 def index():
@@ -71,12 +29,26 @@ def admin():
 def serve_static(filename):
     return send_from_directory('.', filename)
 
+# ==========================================
+# 🏆 LEADERBOARD LOGIC (PostgreSQL Based)
+# ==========================================
 @app.route('/api/leaderboard', methods=['GET'])
 def get_leaderboard():
-    if os.path.exists(app.config['LEADERBOARD_FILE']):
-        with open(app.config['LEADERBOARD_FILE'], 'r') as f:
-            return jsonify(json.load(f))
-    return jsonify([])
+    try:
+        # PostgreSQL table se rank ke hisaab se sorted data utha
+        response = supabase.table('leaderboard_data').select('*').order('rank').execute()
+        leaderboard = []
+        for row in response.data:
+            leaderboard.append({
+                "rank": row['rank'],
+                "team": row['team_name'],
+                "score": row['score'],
+                "memes": row['memes_count']
+            })
+        return jsonify(leaderboard)
+    except Exception as e:
+        print("Error fetching leaderboard:", e)
+        return jsonify([])
 
 @app.route('/api/admin/leaderboard', methods=['POST'])
 def update_leaderboard():
@@ -88,36 +60,36 @@ def update_leaderboard():
     if data:
         try:
             leaderboard_data = json.loads(data)
-            with open(app.config['LEADERBOARD_FILE'], 'w') as f:
-                json.dump(leaderboard_data, f, indent=4)
+            
+            # Pura purana data delete kar aur naya insert kar (Full Sync)
+            supabase.table('leaderboard_data').delete().neq('id', 0).execute()
+            
+            for item in leaderboard_data:
+                supabase.table('leaderboard_data').insert({
+                    "team_name": item['team'],
+                    "score": int(item['score']),
+                    "memes_count": int(item['memes']),
+                    "rank": int(item['rank'])
+                }).execute()
+                
             return 'Success'
         except Exception as e:
-            return str(e), 400
+            return f'Database Error: {str(e)}', 400
     return 'No data provided', 400
 
+# ==========================================
+# 🖼️ GALLERY LOGIC (Storage Bucket + PostgreSQL)
+# ==========================================
 @app.route('/api/gallery', methods=['GET'])
 def get_gallery():
-    images = []
-    # Local images
-    if os.path.exists(app.config['UPLOAD_FOLDER']):
-        for filename in os.listdir(app.config['UPLOAD_FOLDER']):
-            if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
-                images.append(f"/uploads/gallery/{filename}")
-    
-    # Supabase images
     try:
-        sb = get_supabase_client()
-        if sb:
-            bucket = get_supabase_bucket()
-            res = sb.storage.from_(bucket).list()
-            for file in res:
-                # Assuming public bucket, get public URL
-                public_url = sb.storage.from_(bucket).get_public_url(file['name'])
-                images.append(public_url)
+        # Sirf public URLs ko database se fetch kar, bucket ko pura scan mat kar
+        response = supabase.table('gallery_urls').select('image_url').order('created_at', desc=True).execute()
+        images = [item['image_url'] for item in response.data]
+        return jsonify(images)
     except Exception as e:
-        print(f"Supabase gallery error: {e}")
-
-    return jsonify(images)
+        print("Error fetching gallery:", e)
+        return jsonify([])
 
 @app.route('/api/admin/gallery/upload', methods=['POST'])
 def upload_gallery_meme():
@@ -137,55 +109,28 @@ def upload_gallery_meme():
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         final_filename = f"GALLERY_{timestamp}_{filename}"
         
-        # Try Supabase upload first
         try:
-            sb = get_supabase_client()
-            if sb:
-                bucket = get_supabase_bucket()
-                file_content = file.read()
-                sb.storage.from_(bucket).upload(final_filename, file_content)
-                return 'Upload Success (Supabase)'
+            file_bytes = file.read()
+            
+            # 1. Bucket mein image dal
+            supabase.storage.from_('gallery_images').upload(
+                file=file_bytes,
+                path=final_filename,
+                file_options={"content-type": file.content_type}
+            )
+            
+            # 2. Permanent Public URL nikal
+            public_url = supabase.storage.from_('gallery_images').get_public_url(final_filename)
+            
+            # 3. URL ko PostgreSQL DB mein permanently lock kar de
+            supabase.table('gallery_urls').insert({"image_url": public_url}).execute()
+            
+            return 'Upload Success'
         except Exception as e:
-            print(f"Supabase upload error: {e}")
-            # Fallback to local if Supabase fails (optional, or just return error)
-            # file.seek(0) # Reset file pointer if we want to fallback
-        
-        # Local fallback if Supabase is not configured
-        file.seek(0)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], final_filename))
-        return 'Upload Success (Local)'
-    
+            return f"Upload failed: {str(e)}", 500
+            
     return 'Invalid file', 400
 
-@app.route('/api/admin/supabase/config', methods=['GET', 'POST'])
-def manage_supabase_config():
-    password = request.form.get('password') if request.method == 'POST' else request.args.get('password')
-    if password != ADMIN_PASSWORD:
-        return 'Unauthorized', 401
-
-    if request.method == 'POST':
-        try:
-            config = {
-                'url': request.form.get('url'),
-                'key': request.form.get('key'),
-                'bucket': request.form.get('bucket')
-            }
-            with open(app.config['SUPABASE_CONFIG_FILE'], 'w') as f:
-                json.dump(config, f, indent=4)
-            
-            # Reset global client to refresh with new config
-            global supabase
-            supabase = None
-            
-            return 'Success'
-        except Exception as e:
-            return str(e), 400
-    else:
-        if os.path.exists(app.config['SUPABASE_CONFIG_FILE']):
-            with open(app.config['SUPABASE_CONFIG_FILE'], 'r') as f:
-                return jsonify(json.load(f))
-        return jsonify({'url': '', 'key': '', 'bucket': ''})
-
 if __name__ == '__main__':
-    print("Starting Flask server on http://localhost:5000")
+    print("Starting Bulletproof Flask server...")
     app.run(debug=True, port=5000)
